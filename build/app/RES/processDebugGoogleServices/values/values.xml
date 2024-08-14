@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">375005143340</string>
+    <string name="google_api_key" translatable="false">AIzaSyCsjyWDaFaogoMXapadzqisxB9U_btz7kw</string>
+    <string name="google_app_id" translatable="false">1:375005143340:android:de70dc693819a8cc254c89</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCsjyWDaFaogoMXapadzqisxB9U_btz7kw</string>
+    <string name="google_storage_bucket" translatable="false">dietapplication-7386d.appspot.com</string>
+    <string name="project_id" translatable="false">dietapplication-7386d</string>
+</resources>

@@ -1,0 +1,20 @@
+[debug] [2024-05-13T07:53:21.423Z] ----------------------------------------------------------------------
+[debug] [2024-05-13T07:53:21.426Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\oni\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js projects:create di --json
+[debug] [2024-05-13T07:53:21.426Z] CLI Version:   13.8.3
+[debug] [2024-05-13T07:53:21.426Z] Platform:      win32
+[debug] [2024-05-13T07:53:21.426Z] Node Version:  v20.9.0
+[debug] [2024-05-13T07:53:21.426Z] Time:          Mon May 13 2024 15:53:21 GMT+0800 (Singapore Standard Time)
+[debug] [2024-05-13T07:53:21.426Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-05-13T07:53:21.432Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-05-13T07:53:21.432Z] > authorizing via signed-in user (auniafeeqah01@gmail.com)
+[debug] [2024-05-13T07:53:21.436Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects [none]
+[debug] [2024-05-13T07:53:21.436Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects {"projectId":"di","name":"di"}
+[debug] [2024-05-13T07:53:22.870Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects 400
+[debug] [2024-05-13T07:53:22.870Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects {"error":{"code":400,"message":"Request contains an invalid argument.","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.BadRequest","fieldViolations":[{"field":"project_id","description":"project_id must be at least 6 characters long"},{"field":"display_name","description":"project display name must be at least 4 characters"}]},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"url":"https://cloud.google.com/resource-manager/reference/rest/v1/projects"}]}]}}
+[debug] [2024-05-13T07:53:23.071Z] FirebaseError: HTTP Error: 400, Request contains an invalid argument.
+    at responseToError (C:\Users\oni\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:49:12)
+    at RetryOperation._fn (C:\Users\oni\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:305:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[error] 
+[error] Error: Failed to create project. See firebase-debug.log for more info.

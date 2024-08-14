@@ -1,0 +1,1 @@
+ C:\\Users\\oni\\StudioProjects\\diet_app\\.dart_tool\\flutter_build\\8f876b213b37f2968a2d301ad6b59f43\\native_assets.yaml: 

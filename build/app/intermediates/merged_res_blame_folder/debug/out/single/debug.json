@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "com.example.diet_app-merged_res-32:/mipmap-mdpi_logo.png.flat",
+        "source": "com.example.diet_app-main-26:/mipmap-mdpi/logo.png"
+    },
+    {
+        "merged": "com.example.diet_app-merged_res-32:/mipmap-xxxhdpi_logo.png.flat",
+        "source": "com.example.diet_app-main-26:/mipmap-xxxhdpi/logo.png"
+    },
+    {
+        "merged": "com.example.diet_app-merged_res-32:/mipmap-xhdpi_logo.png.flat",
+        "source": "com.example.diet_app-main-26:/mipmap-xhdpi/logo.png"
+    },
+    {
+        "merged": "com.example.diet_app-merged_res-32:/drawable-v21_launch_background.xml.flat",
+        "source": "com.example.diet_app-main-26:/drawable-v21/launch_background.xml"
+    },
+    {
+        "merged": "com.example.diet_app-merged_res-32:/mipmap-hdpi_logo.png.flat",
+        "source": "com.example.diet_app-main-26:/mipmap-hdpi/logo.png"
+    },
+    {
+        "merged": "com.example.diet_app-merged_res-32:/drawable-v21_logo.png.flat",
+        "source": "com.example.diet_app-main-26:/drawable-v21/logo.png"
+    },
+    {
+        "merged": "com.example.diet_app-merged_res-32:/mipmap-xxhdpi_logo.png.flat",
+        "source": "com.example.diet_app-main-26:/mipmap-xxhdpi/logo.png"
+    }
+]

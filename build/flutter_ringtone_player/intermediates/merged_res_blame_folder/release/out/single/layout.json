@@ -1,0 +1,26 @@
+[
+    {
+        "merged": "io.inway.ringtone.player.flutter_ringtone_player-merged_res-10:/layout/notification_action_tombstone.xml",
+        "source": "io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3:/layout/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "io.inway.ringtone.player.flutter_ringtone_player-merged_res-10:/layout/notification_template_part_time.xml",
+        "source": "io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3:/layout/notification_template_part_time.xml"
+    },
+    {
+        "merged": "io.inway.ringtone.player.flutter_ringtone_player-merged_res-10:/layout/custom_dialog.xml",
+        "source": "io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3:/layout/custom_dialog.xml"
+    },
+    {
+        "merged": "io.inway.ringtone.player.flutter_ringtone_player-merged_res-10:/layout/notification_action.xml",
+        "source": "io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3:/layout/notification_action.xml"
+    },
+    {
+        "merged": "io.inway.ringtone.player.flutter_ringtone_player-merged_res-10:/layout/notification_template_icon_group.xml",
+        "source": "io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3:/layout/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "io.inway.ringtone.player.flutter_ringtone_player-merged_res-10:/layout/notification_template_part_chronometer.xml",
+        "source": "io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3:/layout/notification_template_part_chronometer.xml"
+    }
+]

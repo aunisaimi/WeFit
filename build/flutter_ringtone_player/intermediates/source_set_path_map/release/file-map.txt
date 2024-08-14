@@ -1,0 +1,12 @@
+io.inway.ringtone.player.flutter_ringtone_player-jetified-annotation-experimental-1.1.0-0 C:\Users\oni\.gradle\caches\transforms-3\02315cc9f75263553d2042718fc375ee\transformed\jetified-annotation-experimental-1.1.0\res
+io.inway.ringtone.player.flutter_ringtone_player-jetified-window-1.0.0-beta04-1 C:\Users\oni\.gradle\caches\transforms-3\076eb9235982ee06112d76594ea8585f\transformed\jetified-window-1.0.0-beta04\res
+io.inway.ringtone.player.flutter_ringtone_player-jetified-window-java-1.0.0-beta04-2 C:\Users\oni\.gradle\caches\transforms-3\99750bb863b6fe460a7b5da8686e778d\transformed\jetified-window-java-1.0.0-beta04\res
+io.inway.ringtone.player.flutter_ringtone_player-core-1.6.0-3 C:\Users\oni\.gradle\caches\transforms-3\d08c73bfb05384f2e52578171dbd141e\transformed\core-1.6.0\res
+io.inway.ringtone.player.flutter_ringtone_player-main-4 C:\Users\oni\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_ringtone_player-3.2.0\android\src\main\res
+io.inway.ringtone.player.flutter_ringtone_player-release-5 C:\Users\oni\AppData\Local\Pub\Cache\hosted\pub.dev\flutter_ringtone_player-3.2.0\android\src\release\res
+io.inway.ringtone.player.flutter_ringtone_player-pngs-6 C:\Users\oni\StudioProjects\diet_app\build\flutter_ringtone_player\generated\res\pngs\release
+io.inway.ringtone.player.flutter_ringtone_player-resValues-7 C:\Users\oni\StudioProjects\diet_app\build\flutter_ringtone_player\generated\res\resValues\release
+io.inway.ringtone.player.flutter_ringtone_player-rs-8 C:\Users\oni\StudioProjects\diet_app\build\flutter_ringtone_player\generated\res\rs\release
+io.inway.ringtone.player.flutter_ringtone_player-mergeReleaseResources-9 C:\Users\oni\StudioProjects\diet_app\build\flutter_ringtone_player\intermediates\incremental\release\mergeReleaseResources\merged.dir
+io.inway.ringtone.player.flutter_ringtone_player-mergeReleaseResources-10 C:\Users\oni\StudioProjects\diet_app\build\flutter_ringtone_player\intermediates\incremental\release\mergeReleaseResources\stripped.dir
+io.inway.ringtone.player.flutter_ringtone_player-merged_res-11 C:\Users\oni\StudioProjects\diet_app\build\flutter_ringtone_player\intermediates\merged_res\release
