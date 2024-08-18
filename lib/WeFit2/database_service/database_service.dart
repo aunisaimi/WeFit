@@ -350,48 +350,84 @@ class DatabaseService {
    */
 
   // Follow user
-  Future<void> followUserInFirebase(String uid) async {
-    // get the current uid
-    final currentUserId = _auth.currentUser!.uid;
-
-    // add target user to current users following
+  Future<void> followUserInFirebase(String currentUserId, String targetUserId) async {
+    // Add the target user to the current user's following list
     await _db
         .collection("users")
         .doc(currentUserId)
         .collection("Following")
-        .doc(uid)
+        .doc(targetUserId)
         .set({});
 
-    // add current user to the target user's followers
+    // Add the current user to the target user's followers list
     await _db
         .collection("users")
-        .doc(uid)
+        .doc(targetUserId)
         .collection("Followers")
         .doc(currentUserId)
         .set({});
   }
+  // Future<void> followUserInFirebase(String uid, String targetUserId) async {
+  //   // get the current uid
+  //   final currentUserId = _auth.currentUser!.uid;
+  //
+  //   // add target user to current users following
+  //   await _db
+  //       .collection("users")
+  //       .doc(currentUserId)
+  //       .collection("Following")
+  //       .doc(uid)
+  //       .set({});
+  //
+  //   // add current user to the target user's followers
+  //   await _db
+  //       .collection("users")
+  //       .doc(uid)
+  //       .collection("Followers")
+  //       .doc(currentUserId)
+  //       .set({});
+  // }
 
   // unfollow user
-  Future<void> unFollowUserInFirebase(String uid) async {
-    // get the current uid
-    final currentUserId = _auth.currentUser!.uid;
 
-    // remove current user from target user's following
+  Future<void> unFollowUserInFirebase(String currentUserId, String targetUserId) async {
+    // Remove the target user from the current user's following list
     await _db
         .collection("users")
         .doc(currentUserId)
         .collection("Following")
-        .doc(uid)
-        .set({});
+        .doc(targetUserId)
+        .delete();
 
-    // remove current user from target user's follower
+    // Remove the current user from the target user's followers list
     await _db
         .collection("users")
-        .doc(currentUserId)
-        .collection("Following")
+        .doc(targetUserId)
+        .collection("Followers")
         .doc(currentUserId)
         .delete();
   }
+
+  // Future<void> unFollowUserInFirebase(String uid, String targetUserId) async {
+  //   // get the current uid
+  //   final currentUserId = _auth.currentUser!.uid;
+  //
+  //   // remove current user from target user's following
+  //   await _db
+  //       .collection("users")
+  //       .doc(currentUserId)
+  //       .collection("Following")
+  //       .doc(uid)
+  //       .set({});
+  //
+  //   // remove current user from target user's follower
+  //   await _db
+  //       .collection("users")
+  //       .doc(currentUserId)
+  //       .collection("Following")
+  //       .doc(currentUserId)
+  //       .delete();
+  // }
 
   // get a user's followers: list of uids
   Future<List<String>> getFollowerUidsFromFirebase(String uid) async {

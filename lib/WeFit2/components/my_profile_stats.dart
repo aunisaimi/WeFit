@@ -31,7 +31,7 @@ class MyProfileStats extends StatelessWidget {
 
     // text style for text
     var textStyleForText = TextStyle(
-      color: TColor.primaryColor1,
+        color: TColor.primaryColor1,
         fontWeight: FontWeight.bold
     );
 

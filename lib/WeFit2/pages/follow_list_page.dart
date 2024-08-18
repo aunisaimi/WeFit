@@ -31,17 +31,25 @@ class _FollowListPageState extends State<FollowListPage> {
   }
 
   // load followers
+  // Future<void> loadFollowerList() async {
+  //   await databaseProvider.loadUserFollowerProfiles(widget.uid);
+  //   print("Followers for ${widget.uid}:"
+  //       " ${databaseProvider.getListOfFollowersProfile(widget.uid)}");
+  // }
+  //
+  // // load following
+  // Future<void> loadFollowingList() async {
+  //   await databaseProvider.loadUserFollowingProfiles(widget.uid);
+  //   print("Following for ${widget.uid}:"
+  //       " ${databaseProvider.getListOfFollowingProfile(widget.uid)}");
+  // }
+
   Future<void> loadFollowerList() async {
-    await databaseProvider.loadUserFollowerProfiles(widget.uid);
-    print("Followers for ${widget.uid}:"
-        " ${databaseProvider.getListOfFollowersProfile(widget.uid)}");
+    await databaseProvider.loadUserFollowers(widget.uid);
   }
 
-  // load following
   Future<void> loadFollowingList() async {
-    await databaseProvider.loadUserFollowingProfiles(widget.uid);
-    print("Following for ${widget.uid}:"
-        " ${databaseProvider.getListOfFollowingProfile(widget.uid)}");
+    await databaseProvider.loadUserFollowing(widget.uid);
   }
 
   @override
@@ -49,8 +57,8 @@ class _FollowListPageState extends State<FollowListPage> {
     // listen to followers and following
     // final followers = listeningProvider.getListOfFollowersProfile(widget.uid);
     // final following = listeningProvider.getListOfFollowingProfile(widget.uid);
-    final followers = Provider.of<DatabaseProvider>(context).getListOfFollowersProfile(widget.uid);
-    final following = Provider.of<DatabaseProvider>(context).getListOfFollowingProfile(widget.uid);
+    final followers = listeningProvider.getListOfFollowersProfile(widget.uid);
+    final following = listeningProvider.getListOfFollowingProfile(widget.uid);
 
     // tab controller
     return DefaultTabController(
@@ -67,8 +75,8 @@ class _FollowListPageState extends State<FollowListPage> {
             unselectedLabelColor: Colors.grey[500],
             indicatorColor: TColor.secondaryColor1,
             tabs: [
-              Tab(text: "Followers"),
-              Tab(text: "Following"),
+              const Tab(text: "Followers"),
+              const Tab(text: "Following"),
             ],
           ),
         ),

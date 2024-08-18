@@ -36,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   bool _isFollowing = false;
   bool _isCurrentUser = false;
+  late final DatabaseProvider databaseProvider;
 
 
   @override
@@ -46,6 +47,25 @@ class _ProfilePageState extends State<ProfilePage> {
     _isCurrentUser = widget.uid == FirebaseAuth.instance.currentUser?.uid;
     _checkIfFollowing();
     fetchUserData();
+    databaseProvider = Provider.of<DatabaseProvider>(context, listen: false);
+    databaseProvider.loadUserFollowers(widget.uid);
+    databaseProvider.loadUserFollowing(widget.uid);
+    _loadProfileData();
+    _fetchFollowState();
+  }
+
+  Future<void> _fetchFollowState() async {
+    //final provider = context.read<DatabaseProvider>();
+    _isFollowing = await databaseProvider.isFollowing(widget.uid);
+    setState(() {});
+  }
+
+
+  Future<void> _loadProfileData() async {
+    final targetUserId = widget.uid; // Replace with the appropriate userId
+    await context.read<DatabaseProvider>().refreshFollowStatus(targetUserId);
+    await context.read<DatabaseProvider>().loadUserFollowingProfiles(targetUserId);
+    await context.read<DatabaseProvider>().loadUserFollowerProfiles(targetUserId);
   }
 
   Future<void> _checkIfFollowing() async {
@@ -161,39 +181,48 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _toggleFollow() async {
-    final databaseProvider = Provider.of<DatabaseProvider>(context, listen: false);
     if (_isFollowing) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Unfollow"),
-          content: const Text("Are you sure you want to unfollow?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(context);
-                // Perform unfollow
-                await databaseProvider.unfollowUser(widget.uid);
-                setState(() {
-                  _isFollowing = false;
-                });
-              },
-              child: const Text("Yes"),
-            ),
-          ],
-        ),
-      );
+      await databaseProvider.unfollowUser(widget.uid);
     } else {
       await databaseProvider.followUser(widget.uid);
-      setState(() {
-        _isFollowing = true;
-      });
     }
+    await _fetchFollowState();
   }
+
+  // Future<void> _toggleFollow() async {
+  //   final databaseProvider = Provider.of<DatabaseProvider>(context, listen: false);
+  //   if (_isFollowing) {
+  //     showDialog(
+  //       context: context,
+  //       builder: (context) => AlertDialog(
+  //         title: const Text("Unfollow"),
+  //         content: const Text("Are you sure you want to unfollow?"),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context),
+  //             child: const Text("Cancel"),
+  //           ),
+  //           TextButton(
+  //             onPressed: () async {
+  //               Navigator.pop(context);
+  //               // Perform unfollow
+  //               await databaseProvider.unfollowUser(widget.uid);
+  //               setState(() {
+  //                 _isFollowing = false;
+  //               });
+  //             },
+  //             child: const Text("Yes"),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   } else {
+  //     await databaseProvider.followUser(widget.uid);
+  //     setState(() {
+  //       _isFollowing = true;
+  //     });
+  //   }
+  // }
 
   Future<void> fetchUserData() async {
     try {
@@ -245,8 +274,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final allUserPosts = listeningProvider.filterUserPosts(widget.uid);
 
     // listen to followers & following count
-    final followerCount = listeningProvider.getFollowerCount(widget.uid);
-    final followingCount = listeningProvider.getFollowingCount(widget.uid);
+   // final followerCount = listeningProvider.getFollowerCount(widget.uid);
+    //final followingCount = listeningProvider.getFollowingCount(widget.uid);
+
+    final followerCount = databaseProvider.getFollowerCount(widget.uid);
+    final followingCount = databaseProvider.getFollowingCount(widget.uid);
 
     return Scaffold(
       backgroundColor: Colors.grey[200],
@@ -297,9 +329,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 25),
-                
+
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -311,7 +343,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             alignment: Alignment.bottomLeft,
                             children: [
                               _image != null
-                                  ? 
+                                  ?
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(15.0),
                                 child: Image.memory(
@@ -322,7 +354,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                               )
                                   : (profilePicture.isNotEmpty
-                                  ? 
+                                  ?
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(15.0),
                                 child: Image.network(
@@ -332,7 +364,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   fit: BoxFit.cover,
                                 ),
                               )
-                                  : 
+                                  :
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(15.0),
                                 child: Image.asset(

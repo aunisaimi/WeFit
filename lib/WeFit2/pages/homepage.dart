@@ -14,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../StepCounterService.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -34,6 +36,7 @@ class _HomePageState extends State<HomePage> {
 
   // controller
   final _messageController = TextEditingController();
+  StepCounterService stepCounterService = StepCounterService();
 
   // show post msg dialog box
   void _openPostMessageBox(){
