@@ -2,6 +2,7 @@ import 'package:diet_app/WeFit/screens/nav_screen.dart';
 import 'package:diet_app/WeFit/screens/screens.dart';
 import 'package:diet_app/WeFit2/pages/homepage.dart';
 import 'package:diet_app/model/diet.dart';
+import 'package:diet_app/screen/StepCounterApp.dart';
 import 'package:diet_app/screen/meal_planner/dietandfitness/DietPlanner.dart';
 import 'package:diet_app/screen/meal_planner/dietandfitness/meal_plan_view.dart';
 import 'package:diet_app/screen/water_intake/water_intake.dart';
@@ -85,12 +86,12 @@ class _SelectViewState extends State<SelectView> {
             const SizedBox(height: 15),
 
             RoundButton(
-                title: "Add Workout (Trainer)",
+                title: "Step Counter",
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AddExercise(),
+                      builder: (context) => StepCounterHome(),
                     ),
                   );
                 }),
@@ -121,21 +122,6 @@ class _SelectViewState extends State<SelectView> {
                     MaterialPageRoute(
                       builder: (context) =>  WaterIntake(
                           onUpdate: updateIntake),
-                    ),
-                  );
-                }),
-
-
-            const SizedBox(height: 15),
-
-            RoundButton(
-                title: "WeFit",
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const NavScreen()
-                      //const HomeScreen(),
                     ),
                   );
                 }),

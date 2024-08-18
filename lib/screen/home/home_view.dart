@@ -51,6 +51,10 @@ class _HomeViewState extends State<HomeView> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _genderController = TextEditingController();
 
+  // steps reading
+  int _totalSteps = 0;
+  String _stepCountValue = '0';
+
   // bmi reading
   double? bmi = 0;
   double? bmiPercentage;
@@ -104,6 +108,16 @@ class _HomeViewState extends State<HomeView> {
    // updateIntake();
     fetchIntake();
     fetchRemainingCalories();
+    _loadSavedSteps();
+  }
+
+  Future<void> _loadSavedSteps() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _totalSteps = prefs.getInt('totalSteps') ?? 0;
+      int previousTotalSteps = prefs.getInt('previousTotalSteps') ?? 0;
+      _stepCountValue = (_totalSteps - previousTotalSteps).toString();
+    });
   }
 
   Future<void> _loadRemainingCalories() async {
@@ -302,40 +316,6 @@ class _HomeViewState extends State<HomeView> {
     saveIntakeToFirestore(intake);
   }
 
-  // Future<void> fetchIntake() async {
-  //   final QuerySnapshot snapshot = await FirebaseFirestore.instance
-  //       .collection('intake')
-  //       .orderBy('timestamp', descending: true)
-  //       .get();
-  //
-  //   final intakeData = snapshot.docs.map((doc){
-  //     return {
-  //       "title": "${doc['timestamp'].toDate().hour}"
-  //           ":${doc['timestamp'].toDate().minute}",
-  //       "subtitle": "${doc['intake'].toStringAsFixed(0)} ml"
-  //     };
-  //   }).toList();
-  //
-  //   // setState(() {
-  //   //   waterArr = intakeData;
-  //   //   currentIntake = intakeData.fold(0, (sum,item) => sum + double.parse(
-  //   //       item["subtitle"]!.split("")[0]));
-  //   // });
-  //
-  //   double totalIntake = intakeData.fold(0, (sum, item) {
-  //     double intakeAmount = double.parse(item["subtitle"]!.split(" ")[0]);
-  //     return sum + intakeAmount;
-  //   });
-  //
-  //   setState(() {
-  //     waterArr = intakeData;
-  //     currentIntake = totalIntake;
-  //     print('Current Intake: $currentIntake ml');
-  //     });
-  // }
-
-  // Users will need to log their water intake daily,
-  // and the progress bar will reset each day.
   Future<void> fetchIntake() async {
     try {
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
@@ -381,17 +361,6 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  // Future<void> saveIntakeToFirestore(double intake) async {
-  //   final now = DateTime.now();
-  //   final intakeEntry = {
-  //     'intake': intake,
-  //     'timestamp': now,
-  //   };
-  //
-  //   await FirebaseFirestore.instance.collection('intake').add(intakeEntry);
-  //   fetchIntake(); // fetch the updated intake after saving new data
-  // }
-
   Future<void> saveIntakeToFirestore(double intake) async {
     final now = DateTime.now();
     final intakeEntry = {
@@ -403,6 +372,11 @@ class _HomeViewState extends State<HomeView> {
 
     await FirebaseFirestore.instance.collection('intake').add(intakeEntry);
     fetchIntake();
+  }
+
+  String _getCalorieBurnMessage(int steps) {
+    int kcal = (steps / 6500 * 260).round(); // 6.5k steps ~ 260 kcal
+    return 'You\'ve burned approx. $kcal kcal, which is equivalent to ${kcal ~/ 260} plate(s) of rice.';
   }
 
   @override
@@ -689,46 +663,6 @@ class _HomeViewState extends State<HomeView> {
 
                 SizedBox(height: media.width * 0.05),
 
-                // Container(
-                //   padding:
-                //   const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                //   decoration: BoxDecoration(
-                //     color: TColor.primaryColor2.withOpacity(0.3),
-                //     borderRadius: BorderRadius.circular(15),
-                //   ),
-                //   child: Row(
-                //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //     children: [
-                //       Text(
-                //         "Today Target",
-                //         style: TextStyle(
-                //             color: TColor.black,
-                //             fontSize: 14,
-                //             fontWeight: FontWeight.w700),
-                //       ),
-                //       SizedBox(
-                //         width: 70,
-                //         height: 25,
-                //         child: RoundButton(
-                //           title: "Check",
-                //           type: RoundButtonType.bgGradient,
-                //           fontSize: 12,
-                //           fontWeight: FontWeight.w400,
-                //           onPressed: () {
-                //             Navigator.push(
-                //               context,
-                //               MaterialPageRoute(
-                //                 builder: (context) =>
-                //                 const ActivityTrackerView(),
-                //               ),
-                //             );
-                //           },
-                //         ),
-                //       )
-                //     ],
-                //   ),
-                // ),
-
                 SizedBox(height: media.width * 0.05),
 
                 // ads
@@ -789,153 +723,6 @@ class _HomeViewState extends State<HomeView> {
 
                 SizedBox(height: media.width * 0.02),
 
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: Container(
-                    height: media.width * 0.4,
-                    width: double.maxFinite,
-                    decoration: BoxDecoration(
-                      color: TColor.primaryColor2.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.topLeft,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 20),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Heart Rate",
-                                style: TextStyle(
-                                    color: TColor.black,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700),
-                              ),
-                              ShaderMask(
-                                blendMode: BlendMode.srcIn,
-                                shaderCallback: (bounds) {
-                                  return LinearGradient(
-                                      colors: TColor.primaryG,
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight)
-                                      .createShader(
-                                      Rect.fromLTRB(
-                                          0, 0, bounds.width, bounds.height));
-                                },
-                                child: Text(
-                                  "78 BPM",
-                                  style: TextStyle(
-                                      color: TColor.white.withOpacity(0.7),
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        LineChart(
-                          LineChartData(
-                            showingTooltipIndicators:
-                            showingTooltipOnSpots.map((index) {
-                              return ShowingTooltipIndicators([
-                                LineBarSpot(
-                                  tooltipsOnBar,
-                                  lineBarsData.indexOf(tooltipsOnBar),
-                                  tooltipsOnBar.spots[index],
-                                ),
-                              ]);
-                            }).toList(),
-                            lineTouchData: LineTouchData(
-                              enabled: true,
-                              handleBuiltInTouches: false,
-                              touchCallback: (FlTouchEvent event,
-                                  LineTouchResponse? response) {
-                                if (response == null ||
-                                    response.lineBarSpots == null) {
-                                  return;
-                                }
-                                if (event is FlTapUpEvent) {
-                                  final spotIndex =
-                                      response.lineBarSpots!.first.spotIndex;
-                                  showingTooltipOnSpots.clear();
-                                  setState(() {
-                                    showingTooltipOnSpots.add(spotIndex);
-                                  });
-                                }
-                              },
-                              mouseCursorResolver: (FlTouchEvent event,
-                                  LineTouchResponse? response) {
-                                if (response == null ||
-                                    response.lineBarSpots == null) {
-                                  return SystemMouseCursors.basic;
-                                }
-                                return SystemMouseCursors.click;
-                              },
-                              getTouchedSpotIndicator:
-                                  (LineChartBarData barData,
-                                  List<int> spotIndexes) {
-                                return spotIndexes.map((index) {
-                                  return TouchedSpotIndicatorData(
-                                    FlLine(
-                                      color: Colors.red,
-                                    ),
-                                    FlDotData(
-                                      show: true,
-                                      getDotPainter:
-                                          (spot, percent, barData, index) =>
-                                          FlDotCirclePainter(
-                                            radius: 3,
-                                            color: Colors.white,
-                                            strokeWidth: 3,
-                                            strokeColor: TColor.secondaryColor1,
-                                          ),
-                                    ),
-                                  );
-                                }).toList();
-                              },
-                              touchTooltipData: LineTouchTooltipData(
-                                tooltipBgColor: TColor.secondaryColor1,
-                                tooltipRoundedRadius: 20,
-                                getTooltipItems:
-                                    (List<LineBarSpot> lineBarsSpot) {
-                                  return lineBarsSpot.map((lineBarSpot) {
-                                    return LineTooltipItem(
-                                      "${lineBarSpot.x.toInt()} mins ago",
-                                      const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                  }).toList();
-                                },
-                              ),
-                            ),
-                            lineBarsData: lineBarsData,
-                            minY: 0,
-                            maxY: 130,
-                            titlesData: FlTitlesData(
-                              show: false,
-                            ),
-                            gridData: FlGridData(show: false),
-                            borderData: FlBorderData(
-                              show: true,
-                              border: Border.all(
-                                color: Colors.transparent,
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-
                 SizedBox(height: media.width * 0.05),
 
                 // water intake
@@ -988,7 +775,7 @@ class _HomeViewState extends State<HomeView> {
                                     ),
                                     Text(
                                       DateFormat('yyyy-MM-dd').format(DateTime.now()),
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: Colors.grey,
                                         fontSize: 12,
                                       ),
@@ -1116,10 +903,11 @@ class _HomeViewState extends State<HomeView> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
+
                           children: [
                             Container(
                               width: double.maxFinite,
-                              height: media.width * 0.45,
+                              height: media.width * 0.7,
                               padding: const EdgeInsets.symmetric(
                                   vertical: 25, horizontal: 20),
                               decoration: BoxDecoration(
@@ -1132,7 +920,7 @@ class _HomeViewState extends State<HomeView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Sleep",
+                                      "Steps taken today",
                                       style: TextStyle(
                                           color: TColor.black,
                                           fontSize: 12,
@@ -1144,21 +932,72 @@ class _HomeViewState extends State<HomeView> {
                                         return LinearGradient(
                                             colors: TColor.primaryG,
                                             begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight)
-                                            .createShader(
+                                            end: Alignment.centerRight
+                                        ).createShader(
                                             Rect.fromLTRB(
                                                 0, 0, bounds.width, bounds.height));
                                       },
-                                      child: Text(
-                                        "8h 20m",
-                                        style: TextStyle(
-                                            color: TColor.white.withOpacity(0.7),
-                                            fontWeight: FontWeight.w700,
-                                            fontSize: 14),
+                                      // child: Text(
+                                      //   "Steps today: ",
+                                      //   style: TextStyle(
+                                      //       color: TColor.white,
+                                      //       fontWeight: FontWeight.w700,
+                                      //       fontSize: 12
+                                      //   ),
+                                      // ),
+                                    ),
+                                    const SizedBox(height: 19),
+                                    Container(
+                                      alignment: Alignment.center,
+                                      child: SizedBox(
+                                        width: media.width * 0.2,
+                                        height: media.width * 0.2,
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Container(
+                                              width: media.width * 0.18,
+                                              height: media.width * 0.18,
+                                              alignment: Alignment.center,
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(colors: TColor.primaryG),
+                                                borderRadius: BorderRadius.circular(media.width * 0.075),
+                                              ),
+                                              child: FittedBox(
+                                                child: Text(
+                                                  "$_totalSteps steps",
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: TColor.white,
+                                                    fontSize: 11,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            SimpleCircularProgressBar(
+                                              progressStrokeWidth: 10,
+                                              backStrokeWidth: 10,
+                                              progressColors: [TColor.secondaryColor2, TColor.secondaryColor1],
+                                              backColor: Colors.grey.shade100,
+                                              valueNotifier: _progressNotifier,
+                                              startAngle: -180,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
+                                    const SizedBox(height: 30),
+                                    Text(
+                                      _getCalorieBurnMessage(_totalSteps),
+                                      style: TextStyle(
+                                        color: TColor.black,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
                                     const Spacer(),
-                                    const Icon(Icons.alarm)
+                                    const Icon(Icons.snowshoeing_sharp)
                                   ]),
                             ),
 
@@ -1166,7 +1005,7 @@ class _HomeViewState extends State<HomeView> {
 
                             Container(
                               width: double.maxFinite,
-                              height: media.width * 0.45,
+                              height: media.width * 0.5,
                               padding: const EdgeInsets.symmetric(
                                   vertical: 25, horizontal: 20),
                               decoration: BoxDecoration(
@@ -1199,8 +1038,6 @@ class _HomeViewState extends State<HomeView> {
                                       },
                                       child: Text(
                                         "${_remainingCalories ?? 0} kCal",
-                                        //"$_remainingCalories kCal",
-                                        //"760 kCal",
                                         style: TextStyle(
                                             color: TColor.white, //.withOpacity(0.7),
                                             fontWeight: FontWeight.w700,
@@ -1251,25 +1088,6 @@ class _HomeViewState extends State<HomeView> {
                                   ]
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: ElevatedButton(
-                                onPressed: (){
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => MealPlanView(
-                                       // remainingCalories: _remainingCalories,
-                                        onCaloriesUpdated: (updatedCalories) {
-                                          _updateRemainingCalories(updatedCalories);
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: const Text("Go to Meal Plan"),
-                              ),
-                            )
                           ],
                         )
                     )
@@ -1277,208 +1095,6 @@ class _HomeViewState extends State<HomeView> {
                 ),
 
                 SizedBox(height: media.width * 0.1,),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Workout Progress",
-                      style: TextStyle(
-                          color: TColor.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700),
-                    ),
-                    Container(
-                        height: 30,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: TColor.primaryG),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton(
-                            items: ["Weekly", "Monthly"]
-                                .map((name) => DropdownMenuItem(
-                              value: name,
-                              child: Text(
-                                name,
-                                style: TextStyle(
-                                    color: TColor.gray, fontSize: 14),
-                              ),
-                            ))
-                                .toList(),
-                            onChanged: (value) {},
-                            icon: Icon(Icons.expand_more, color: TColor.white),
-                            hint: Text(
-                              "Weekly",
-                              textAlign: TextAlign.center,
-                              style:
-                              TextStyle(color: TColor.white, fontSize: 12),
-                            ),
-                          ),
-                        )),
-                  ],
-                ),
-                SizedBox(height: media.width * 0.05,),
-                Container(
-                    padding: const EdgeInsets.only(left: 15),
-                    height: media.width * 0.5,
-                    width: double.maxFinite,
-                    child: LineChart(
-                      LineChartData(
-                        showingTooltipIndicators:
-                        showingTooltipOnSpots.map((index) {
-                          return ShowingTooltipIndicators([
-                            LineBarSpot(
-                              tooltipsOnBar,
-                              lineBarsData.indexOf(tooltipsOnBar),
-                              tooltipsOnBar.spots[index],
-                            ),
-                          ]);
-                        }).toList(),
-                        lineTouchData: LineTouchData(
-                          enabled: true,
-                          handleBuiltInTouches: false,
-                          touchCallback: (FlTouchEvent event,
-                              LineTouchResponse? response) {
-                            if (response == null ||
-                                response.lineBarSpots == null) {
-                              return;
-                            }
-                            if (event is FlTapUpEvent) {
-                              final spotIndex =
-                                  response.lineBarSpots!.first.spotIndex;
-                              showingTooltipOnSpots.clear();
-                              setState(() {
-                                showingTooltipOnSpots.add(spotIndex);
-                              });
-                            }
-                          },
-                          mouseCursorResolver: (FlTouchEvent event,
-                              LineTouchResponse? response) {
-                            if (response == null ||
-                                response.lineBarSpots == null) {
-                              return SystemMouseCursors.basic;
-                            }
-                            return SystemMouseCursors.click;
-                          },
-                          getTouchedSpotIndicator: (LineChartBarData barData,
-                              List<int> spotIndexes) {
-                            return spotIndexes.map((index) {
-                              return TouchedSpotIndicatorData(
-                                FlLine(
-                                  color: Colors.transparent,
-                                ),
-                                FlDotData(
-                                  show: true,
-                                  getDotPainter:
-                                      (spot, percent, barData, index) =>
-                                      FlDotCirclePainter(
-                                        radius: 3,
-                                        color: Colors.white,
-                                        strokeWidth: 3,
-                                        strokeColor: TColor.secondaryColor1,
-                                      ),
-                                ),
-                              );
-                            }).toList();
-                          },
-                          touchTooltipData: LineTouchTooltipData(
-                            tooltipBgColor: TColor.secondaryColor1,
-                            tooltipRoundedRadius: 20,
-                            getTooltipItems: (List<LineBarSpot> lineBarsSpot) {
-                              return lineBarsSpot.map((lineBarSpot) {
-                                return LineTooltipItem(
-                                  "${lineBarSpot.x.toInt()} mins ago",
-                                  const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                );
-                              }).toList();
-                            },
-                          ),
-                        ),
-                        lineBarsData: lineBarsData1,
-                        minY: -0.5,
-                        maxY: 110,
-                        titlesData: FlTitlesData(
-                            show: true,
-                            leftTitles: AxisTitles(),
-                            topTitles: AxisTitles(),
-                            bottomTitles: AxisTitles(
-                              sideTitles: bottomTitles,
-                            ),
-                            rightTitles: AxisTitles(
-                              sideTitles: rightTitles,
-                            )),
-                        gridData: FlGridData(
-                          show: true,
-                          drawHorizontalLine: true,
-                          horizontalInterval: 25,
-                          drawVerticalLine: false,
-                          getDrawingHorizontalLine: (value) {
-                            return FlLine(
-                              color: TColor.gray.withOpacity(0.15),
-                              strokeWidth: 2,
-                            );
-                          },
-                        ),
-                        borderData: FlBorderData(
-                          show: true,
-                          border: Border.all(
-                            color: Colors.transparent,
-                          ),
-                        ),
-                      ),
-                    )
-
-                ),
-                SizedBox(height: media.width * 0.05),
-
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                //   children: [
-                //     Text(
-                //       "Latest Workout",
-                //       style: TextStyle(
-                //           color: TColor.black,
-                //           fontSize: 16,
-                //           fontWeight: FontWeight.w700),
-                //     ),
-                //     TextButton(
-                //       onPressed: () {},
-                //       child: Text(
-                //         "See More",
-                //         style: TextStyle(
-                //             color: TColor.gray,
-                //             fontSize: 14,
-                //             fontWeight: FontWeight.w700),
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // ListView.builder(
-                //     padding: EdgeInsets.zero,
-                //     physics: const NeverScrollableScrollPhysics(),
-                //     shrinkWrap: true,
-                //     itemCount: lastWorkoutArr.length,
-                //     itemBuilder: (context, index) {
-                //       var wObj = lastWorkoutArr[index] as Map? ?? {};
-                //       return InkWell(
-                //           onTap: () {
-                //             Navigator.push(
-                //               context,
-                //               MaterialPageRoute(
-                //                 builder: (context) =>
-                //                 const FinishedWorkoutView(),
-                //               ),
-                //             );
-                //           },
-                //           child: WorkoutRow(wObj: wObj));
-                //     }),
-
                 SizedBox(height: media.width * 0.1),
               ],
             ),
@@ -1523,149 +1139,6 @@ class _HomeViewState extends State<HomeView> {
             throw Error();
         }
       },
-    );
-  }
-
-  LineTouchData get lineTouchData1 => LineTouchData(
-    handleBuiltInTouches: true,
-    touchTooltipData: LineTouchTooltipData(
-      tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-    ),
-  );
-
-  List<LineChartBarData> get lineBarsData1 => [
-    lineChartBarData1_1,
-    lineChartBarData1_2,
-  ];
-
-  LineChartBarData get lineChartBarData1_1 => LineChartBarData(
-    isCurved: true,
-    gradient: LinearGradient(colors: [
-      TColor.primaryColor2.withOpacity(0.5),
-      TColor.primaryColor1.withOpacity(0.5),
-    ]),
-    barWidth: 4,
-    isStrokeCapRound: true,
-    dotData: FlDotData(show: false),
-    belowBarData: BarAreaData(show: false),
-    spots: const [
-      FlSpot(1, 35),
-      FlSpot(2, 70),
-      FlSpot(3, 40),
-      FlSpot(4, 80),
-      FlSpot(5, 25),
-      FlSpot(6, 70),
-      FlSpot(7, 35),
-    ],
-  );
-
-  LineChartBarData get lineChartBarData1_2 => LineChartBarData(
-    isCurved: true,
-    gradient: LinearGradient(colors: [
-      TColor.secondaryColor2.withOpacity(0.5),
-      TColor.secondaryColor1.withOpacity(0.5),
-    ]),
-    barWidth: 2,
-    isStrokeCapRound: true,
-    dotData: FlDotData(show: false),
-    belowBarData: BarAreaData(
-      show: false,
-    ),
-    spots: const [
-      FlSpot(1, 80),
-      FlSpot(2, 50),
-      FlSpot(3, 90),
-      FlSpot(4, 40),
-      FlSpot(5, 80),
-      FlSpot(6, 35),
-      FlSpot(7, 60),
-    ],
-  );
-
-  SideTitles get rightTitles => SideTitles(
-    getTitlesWidget: rightTitleWidgets,
-    showTitles: true,
-    interval: 20,
-    reservedSize: 40,
-  );
-
-  Widget rightTitleWidgets(double value, TitleMeta meta) {
-    String text;
-    switch (value.toInt()) {
-      case 0:
-        text = '0%';
-        break;
-      case 20:
-        text = '20%';
-        break;
-      case 40:
-        text = '40%';
-        break;
-      case 60:
-        text = '60%';
-        break;
-      case 80:
-        text = '80%';
-        break;
-      case 100:
-        text = '100%';
-        break;
-      default:
-        return Container();
-    }
-
-    return Text(text,
-        style: TextStyle(
-          color: TColor.gray,
-          fontSize: 12,
-        ),
-        textAlign: TextAlign.center);
-  }
-
-  SideTitles get bottomTitles => SideTitles(
-    showTitles: true,
-    reservedSize: 32,
-    interval: 1,
-    getTitlesWidget: bottomTitleWidgets,
-  );
-
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    var style = TextStyle(
-      color: TColor.gray,
-      fontSize: 12,
-    );
-    Widget text;
-    switch (value.toInt()) {
-      case 1:
-        text = Text('Sun', style: style);
-        break;
-      case 2:
-        text = Text('Mon', style: style);
-        break;
-      case 3:
-        text = Text('Tue', style: style);
-        break;
-      case 4:
-        text = Text('Wed', style: style);
-        break;
-      case 5:
-        text = Text('Thu', style: style);
-        break;
-      case 6:
-        text = Text('Fri', style: style);
-        break;
-      case 7:
-        text = Text('Sat', style: style);
-        break;
-      default:
-        text = const Text('');
-        break;
-    }
-
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      space: 10,
-      child: text,
     );
   }
 }
