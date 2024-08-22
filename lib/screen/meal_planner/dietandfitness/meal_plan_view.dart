@@ -27,7 +27,7 @@ class _MealPlanViewState extends State<MealPlanView> {
   String searchText = '';
   String selectedCategory = 'Breakfast';
   TextEditingController searchController = TextEditingController();
-  List<Diet> diets = [];
+  List<Map<String, dynamic>> mealArr = []; // Initialize as empty list
   int? _remainingCalories;
   bool _isLoading = true; // To control the loading state
 
@@ -38,121 +38,10 @@ class _MealPlanViewState extends State<MealPlanView> {
     "Dinner": {},
   };
 
-  List<Map<String, dynamic>> mealArr = [
-    {
-      "category": "Breakfast",
-      "name": "Nasi Lemak",
-      "image": "assets/img/nasi lemak.jpeg",
-      "title": "Nasi Lemak",
-      "calories": 350,
-      "fat": 15,
-      "recommendedAmount": "1 plate"
-    },
-    {
-      "category": "Breakfast",
-      "name": "Roti Canai",
-      "image": "assets/img/roti_canai.jpg",
-      "title": "Roti Canai",
-      "calories": 318,
-      "fat": 11,
-      "recommendedAmount": "1 plate"
-    },
-    {
-      "category": "Breakfast",
-      "name": "Bubur Ayam",
-      "image": "assets/img/bubur.jpeg",
-      "title": "Bubur",
-      "calories": 333,
-      "fat": 11,
-      "recommendedAmount": "1 plate"
-    },
-    {
-      "category": "Lunch",
-      "name": "Nasi Kerabu",
-      "image": "assets/img/nasi_kerabu.jpg",
-      "title": "Nasi Kerabu",
-      "calories": 450,
-      "fat": 20,
-      "recommendedAmount": "1 serving"
-    },
-    {
-      "category": "Lunch",
-      "name": "Nasi Goreng",
-      "image": "assets/img/nasi_goreng.jpg",
-      "title": "Nasi Goreng",
-      "calories": 637,
-      "fat": 25,
-      "recommendedAmount": "1 serving"
-    },
-    {
-      "category": "Lunch",
-      "name": "Laksa Penang",
-      "image": "assets/img/laksa_penang.jpg",
-      "title": "Laksa Penang",
-      "calories": 377,
-      "fat": 2,
-      "recommendedAmount": "1 serving"
-    },
-    {
-      "category": "Lunch",
-      "name": "Satay Ayam / Daging",
-      "image": "assets/img/satay.jpg",
-      "title": "Satay Ayam / Daging",
-      "calories": 47,
-      "fat": 1.4,
-      "recommendedAmount": "2 serving"
-    },
-    {
-      "category": "Snack",
-      "name": "Snacks",
-      "image": "assets/img/snacks.jpeg",
-      "title": "Snacks",
-      "calories": 200,
-      "fat": 10,
-      "recommendedAmount": "1 packet"
-    },
-    {
-      "category": "Dinner",
-      "name": "Mee goreng Mamak",
-      "image": "assets/img/mee.jpg",
-      "title": "Mee goreng Mamak",
-      "calories": 500,
-      "fat": 25,
-      "recommendedAmount": "1 plate"
-    },
-    {
-      "category": "Dinner",
-      "name": "MeeHun Goreng",
-      "image": "assets/img/meehoon.jpg",
-      "title": "MeeHun Goreng",
-      "calories": 588,
-      "fat": 23,
-      "recommendedAmount": "1 plate"
-    },
-    {
-      "category": "Dinner",
-      "name": "Tomyam Seafood",
-      "image": "assets/img/tomyam.jpg",
-      "title": "Tomyam Seafood",
-      "calories": 285,
-      "fat": 19,
-      "recommendedAmount": "1 plate"
-    },
-    {
-      "category": "Dinner",
-      "name": "Nasi Goreng",
-      "image": "assets/img/nasi_goreng.jpg",
-      "title": "Nasi Goreng",
-      "calories": 637,
-      "fat": 25,
-      "recommendedAmount": "1 serving"
-    },
-  ];
-
   List<Map<String, dynamic>> get filteredMeals {
     return mealArr.where((meal) =>
     meal["category"] == selectedCategory &&
-        meal["title"].toLowerCase().contains(searchText.toLowerCase()))
+        (meal["name"]?.toLowerCase() ?? '').contains(searchText.toLowerCase()))
         .toList();
   }
 
@@ -160,7 +49,9 @@ class _MealPlanViewState extends State<MealPlanView> {
     int total = 0;
     selectedMeals.forEach((key, meal) {
       if (meal.isNotEmpty) {
-        total += meal["calories"] as int;
+        // Safely parse the calories value to int
+        int calories = int.tryParse(meal["calories"].toString()) ?? 0;
+        total += calories;
       }
     });
     return total;
@@ -188,19 +79,91 @@ class _MealPlanViewState extends State<MealPlanView> {
     await PreferencesHelper.saveSelectedMeals(selectedMeals);
   }
 
+  Future<void> _fetchMealPlannerData() async {
+    try {
+      final QuerySnapshot snapshot = await FirebaseFirestore
+          .instance
+          .collection('mealPlanner')
+          .get();
+
+      List<Map<String, dynamic>> fetchedMeals = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          "category": data["category"],
+          "name": data["name"],
+          "image": data["image"],
+          "description": data["description"],
+          "calories": data["calories"],
+          "fat": data["fat"],
+          "serving": data["serving"],
+        };
+      }).toList();
+
+      setState(() {
+        mealArr = fetchedMeals;
+        _isLoading = false; // Update loading state
+      });
+    } catch (e) {
+      // Handle errors here
+      print('Error fetching meal planner data: $e');
+      setState(() {
+        _isLoading = false; // Update loading state
+      });
+    }
+  }
+
+  // Future<void> _loadInitialCalories() async {
+  //   User? user = FirebaseAuth.instance.currentUser;
+  //   if (user != null) {
+  //     DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+  //     int initialCalories = (userDoc.get('initialCalories') as num).toInt();
+  //
+  //     setState(() {
+  //       _remainingCalories = initialCalories;
+  //     });
+  //
+  //     _saveRemainingCalories(_remainingCalories!);
+  //     await _fetchMealPlannerData(); // Fetch meal data after loading calories
+  //     await _loadData();
+  //   }
+  // }
+
+  // reset daily
   Future<void> _loadInitialCalories() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? lastUpdateDate = prefs.getString('lastUpdateDate');
+      String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+      if (lastUpdateDate != currentDate) {
+        // Date is different, reset the meal selections
+        selectedMeals = {
+          "Breakfast": {},
+          "Lunch": {},
+          "Snack": {},
+          "Dinner": {},
+        };
+        await _saveData();
+        prefs.setString('lastUpdateDate', currentDate);
+      } else {
+        // Load previously selected meals if the date matches
+        await _loadData();
+      }
+
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
       int initialCalories = (userDoc.get('initialCalories') as num).toInt();
 
       setState(() {
         _remainingCalories = initialCalories;
-        _isLoading = false; // Update loading state
       });
 
       _saveRemainingCalories(_remainingCalories!);
-      await _loadData();
+      await _fetchMealPlannerData(); // Fetch meal data after loading calories
     }
   }
 
@@ -230,29 +193,13 @@ class _MealPlanViewState extends State<MealPlanView> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {
-        //       widget.onCaloriesUpdated(remainingCalories);
-        //       SharedPreferences.getInstance().then((prefs) {
-        //         prefs.setInt('remainingCalories', remainingCalories);
-        //         prefs.setString(
-        //             'lastUpdateDate',
-        //             DateFormat('yyyy-MM-dd').format(DateTime.now()));
-        //       });
-        //       ScaffoldMessenger.of(context).showSnackBar(
-        //         const SnackBar(
-        //           content: Text('Remaining calories saved.'),
-        //         ),
-        //       );
-        //     },
-        //     icon: const Icon(Icons.save),
-        //   ),
-        // ],
       ),
+
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Column(
+          ?
+      Center(child: CircularProgressIndicator())
+          :
+      Column(
         children: [
           Container(
             decoration:
@@ -292,20 +239,6 @@ class _MealPlanViewState extends State<MealPlanView> {
                       setState(() {
                         isActiveTab = 1;
                         selectedCategory = "Lunch";
-                      });
-                    },
-                  ),
-                ),
-                Expanded(
-                  child: RoundButton(
-                    title: "Snack",
-                    type: isActiveTab == 2
-                        ? RoundButtonType.bgSGradient
-                        : RoundButtonType.bgGradient,
-                    onPressed: () {
-                      setState(() {
-                        isActiveTab = 2;
-                        selectedCategory = "Snack";
                       });
                     },
                   ),
@@ -368,6 +301,9 @@ class _MealPlanViewState extends State<MealPlanView> {
               ],
             ),
           ),
+
+          const SizedBox(height: 10),
+
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -399,8 +335,8 @@ class _MealPlanViewState extends State<MealPlanView> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            meal["image"].toString(),
+                          child: Image.network(
+                            meal["image"].toString(), // Updated to use network image
                             width: media.width,
                             height: media.width * 0.55,
                             fit: BoxFit.cover,
@@ -414,14 +350,16 @@ class _MealPlanViewState extends State<MealPlanView> {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                        const SizedBox(height: 8),
                         Text(
-                          meal["title"],
+                          "Description: ${meal["description"]}",
                           style: TextStyle(
                             color: TColor.black,
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+
                         const SizedBox(height: 8),
                         Text(
                           "Calories: ${meal["calories"]} kcal",
@@ -440,7 +378,7 @@ class _MealPlanViewState extends State<MealPlanView> {
                           ),
                         ),
                         Text(
-                          "Recommended Amount: ${meal["recommendedAmount"]}",
+                          "Serving size: ${meal["serving"]} g",
                           style: TextStyle(
                             color: TColor.black,
                             fontSize: 14,
