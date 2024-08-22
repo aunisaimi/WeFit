@@ -4,9 +4,7 @@ import 'package:diet_app/Helpers/preferences_helper.dart';
 import 'package:diet_app/common/RoundButton.dart';
 import 'package:diet_app/common/color_extension.dart';
 import 'package:diet_app/screen/bmi/bmiCalculator.dart';
-import 'package:diet_app/screen/meal_planner/dietandfitness/meal_plan_view.dart';
 import 'package:diet_app/screen/on_boarding/started_view.dart';
-import 'package:diet_app/screen/water_intake/water_intake.dart';
 import 'package:dotted_dashed_line/dotted_dashed_line.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -21,11 +19,12 @@ import '../../database/auth_service.dart';
 
 class HomeView extends StatefulWidget {
   final int remainingCalories;
+  final int remainingSteps;
   late bool logGoogle = false;
 
-  HomeView({Key? key, required this.remainingCalories}) : super(key : key);
+  HomeView({Key? key, required this.remainingCalories, required this.remainingSteps}) : super(key : key);
 
-  HomeView.loginWithGoogle(logGoogle, this.remainingCalories){
+  HomeView.loginWithGoogle(logGoogle, this.remainingCalories, this.remainingSteps){
     this.logGoogle = logGoogle;
   }
 
@@ -54,6 +53,9 @@ class _HomeViewState extends State<HomeView> {
   // steps reading
   int _totalSteps = 0;
   String _stepCountValue = '0';
+  int _targetSteps = 10000;
+  int _previousTotalSteps = 0;
+  late ValueNotifier<double> _progressNotifierSteps = ValueNotifier(0);
 
   // bmi reading
   double? bmi = 0;
@@ -104,20 +106,78 @@ class _HomeViewState extends State<HomeView> {
     });
     _remainingCalories = widget.remainingCalories;
     _progressNotifier = ValueNotifier(_calculateProgress(widget.remainingCalories));
+    _progressNotifierSteps = ValueNotifier(_calculateProgress(widget.remainingSteps));
     _loadData();
    // updateIntake();
     fetchIntake();
     fetchRemainingCalories();
+    _fetchStepsFromFirestore();
     _loadSavedSteps();
   }
 
   Future<void> _loadSavedSteps() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+
+    DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+        .instance
+        .collection('users')
+        .doc(userId)
+        .get();
+
     setState(() {
-      _totalSteps = prefs.getInt('totalSteps') ?? 0;
-      int previousTotalSteps = prefs.getInt('previousTotalSteps') ?? 0;
-      _stepCountValue = (_totalSteps - previousTotalSteps).toString();
+      _totalSteps = snapshot.data()?['totalSteps'] ?? 0;
+      _previousTotalSteps = snapshot.data()?['previousTotalSteps'] ?? 0;
+      _stepCountValue = (_totalSteps - _previousTotalSteps).toString();
+      _targetSteps = prefs.getInt('dailyStepTarget') ?? 10000;  // Fetch the target steps
+      _progressNotifierSteps.value = _calculateProgressSteps(int.parse(_stepCountValue), _targetSteps);
     });
+  }
+
+  // Future<void> _loadSavedSteps() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String userId = FirebaseAuth.instance.currentUser!.uid;
+  //
+  //   // Fetch steps from SharedPreferences first
+  //   int currentSteps = prefs.getInt('currentSteps') ?? 0;
+  //   int previousTotalSteps = prefs.getInt('previousTotalSteps') ?? 0;
+  //   int dailyStepTarget = prefs.getInt('dailyStepTarget') ?? 10000;  // Fetch the target steps
+  //
+  //   // Set initial state with SharedPreferences data
+  //   setState(() {
+  //     _totalSteps = currentSteps;
+  //     _stepCountValue = (currentSteps - previousTotalSteps).toString();
+  //     _targetSteps = dailyStepTarget;
+  //     _progressNotifierSteps.value = _calculateProgressSteps(currentSteps - previousTotalSteps, dailyStepTarget);
+  //   });
+  //
+  //   // Fetch cumulative steps from Firestore
+  //   DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+  //       .instance
+  //       .collection('users')
+  //       .doc(userId)
+  //       .get();
+  //
+  //   if (snapshot.exists) {
+  //     int firestorePreviousTotalSteps =
+  //         snapshot.data()?['previousTotalSteps'] ?? previousTotalSteps;
+  //     int firestoreTotalSteps =
+  //         snapshot.data()?['totalSteps'] ?? currentSteps;
+  //
+  //     setState(() {
+  //       _totalSteps = firestoreTotalSteps;
+  //       _stepCountValue = (firestoreTotalSteps - firestorePreviousTotalSteps)
+  //           .toString();
+  //       _progressNotifierSteps.value =
+  //           _calculateProgressSteps(
+  //               firestoreTotalSteps - firestorePreviousTotalSteps,
+  //               dailyStepTarget);
+  //     });
+  //   }
+  // }
+
+  double _calculateProgressSteps(int currentSteps, int targetSteps) {
+    return (currentSteps / targetSteps) * 100;
   }
 
   Future<void> _loadRemainingCalories() async {
@@ -375,14 +435,32 @@ class _HomeViewState extends State<HomeView> {
   }
 
   String _getCalorieBurnMessage(int steps) {
-    int kcal = (steps / 6500 * 260).round(); // 6.5k steps ~ 260 kcal
-    return 'You\'ve burned approx. $kcal kcal, which is equivalent to ${kcal ~/ 260} plate(s) of rice.';
+    // Define the constants for calculation
+    const double stepsPerKcal = 6500 / 260; // This means 25 steps = 1 kcal
+
+    // Calculate the calories burned
+    int kcal = (steps / stepsPerKcal).round();
+
+    return 'You\'ve burned approximately $kcal kcal';
+  }
+
+  Future<void> _fetchStepsFromFirestore() async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    final DocumentSnapshot userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId) // Replace with the actual user ID
+        .get();
+
+    setState(() {
+      _totalSteps = userDoc['steps'] ?? 0; // Get the steps value from Firestore
+    });
   }
 
   @override
   void dispose(){
     super.dispose();
     _progressNotifier.dispose();
+    _progressNotifierSteps.dispose();
   }
 
   void logout(BuildContext context){
@@ -506,6 +584,7 @@ class _HomeViewState extends State<HomeView> {
 
     print("Building HomeView with remaining calories: $_remainingCalories");
     print("Building HomeView with taken water intake: $currentIntake");
+    print("Building HomeView with steps: $_stepCountValue");
 
     final lineBarsData = [
       LineChartBarData(
@@ -907,7 +986,7 @@ class _HomeViewState extends State<HomeView> {
                           children: [
                             Container(
                               width: double.maxFinite,
-                              height: media.width * 0.7,
+                              height: media.width * 0.75,
                               padding: const EdgeInsets.symmetric(
                                   vertical: 25, horizontal: 20),
                               decoration: BoxDecoration(
@@ -937,14 +1016,6 @@ class _HomeViewState extends State<HomeView> {
                                             Rect.fromLTRB(
                                                 0, 0, bounds.width, bounds.height));
                                       },
-                                      // child: Text(
-                                      //   "Steps today: ",
-                                      //   style: TextStyle(
-                                      //       color: TColor.white,
-                                      //       fontWeight: FontWeight.w700,
-                                      //       fontSize: 12
-                                      //   ),
-                                      // ),
                                     ),
                                     const SizedBox(height: 19),
                                     Container(
@@ -965,7 +1036,8 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                               child: FittedBox(
                                                 child: Text(
-                                                  "$_totalSteps steps",
+                                                  //"$_totalSteps steps",
+                                                  "$_stepCountValue steps",
                                                   textAlign: TextAlign.center,
                                                   style: TextStyle(
                                                     color: TColor.white,
@@ -979,7 +1051,7 @@ class _HomeViewState extends State<HomeView> {
                                               backStrokeWidth: 10,
                                               progressColors: [TColor.secondaryColor2, TColor.secondaryColor1],
                                               backColor: Colors.grey.shade100,
-                                              valueNotifier: _progressNotifier,
+                                              valueNotifier: _progressNotifierSteps,
                                               startAngle: -180,
                                             ),
                                           ],
@@ -988,11 +1060,11 @@ class _HomeViewState extends State<HomeView> {
                                     ),
                                     const SizedBox(height: 30),
                                     Text(
-                                      _getCalorieBurnMessage(_totalSteps),
+                                      _getCalorieBurnMessage(int.parse(_stepCountValue)),
                                       style: TextStyle(
-                                        color: TColor.black,
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w800,
+                                        color: TColor.gray,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                       textAlign: TextAlign.center,
                                     ),
