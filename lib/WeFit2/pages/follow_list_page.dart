@@ -59,6 +59,7 @@ class _FollowListPageState extends State<FollowListPage> {
     // final following = listeningProvider.getListOfFollowingProfile(widget.uid);
     final followers = listeningProvider.getListOfFollowersProfile(widget.uid);
     final following = listeningProvider.getListOfFollowingProfile(widget.uid);
+    print("Following list in UI: ${following.map((profile) => profile.uid).toList()}");
 
     // tab controller
     return DefaultTabController(

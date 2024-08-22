@@ -439,7 +439,11 @@ class DatabaseService {
         .get();
 
     // return as a nice simple list of uids
-    return snapshot.docs.map((doc) => doc.id).toList();
+    //return snapshot.docs.map((doc) => doc.id).toList();
+    return snapshot.docs
+        .map((doc) => doc.id)
+        .where((id) => id != uid)
+        .toList();
   }
 
   // get a user's followings: list of uids
@@ -452,7 +456,10 @@ class DatabaseService {
         .get();
 
     // return as a nice simple list of uids
-    return snapshot.docs.map((doc) => doc.id).toList();
+    return snapshot.docs
+        .map((doc) => doc.id)
+        .where((id) => id != uid)
+        .toList();
   }
 
   /*

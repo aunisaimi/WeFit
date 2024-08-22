@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:diet_app/WeFit2/components/my_bio_box.dart';
 import 'package:diet_app/WeFit2/components/my_follow_btn.dart';
 import 'package:diet_app/WeFit2/components/my_input_alert_box.dart';
@@ -182,47 +183,32 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _toggleFollow() async {
     if (_isFollowing) {
-      await databaseProvider.unfollowUser(widget.uid);
+      // Show a confirmation dialog before unfollowing
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.question,
+        showCloseIcon: true,
+        title: "Unfollow",
+        desc: "Are you sure you want to unfollow?",
+        btnOkOnPress: () async {
+          // Perform the unfollow action
+          await databaseProvider.unfollowUser(widget.uid);
+          setState(() {
+            _isFollowing = false;
+          });
+          await _fetchFollowState(); // Refresh follow state after unfollowing
+        },
+        btnCancelOnPress: () {},
+      ).show();
     } else {
+      // Directly follow the user
       await databaseProvider.followUser(widget.uid);
+      setState(() {
+        _isFollowing = true;
+      });
+      await _fetchFollowState(); // Refresh follow state after following
     }
-    await _fetchFollowState();
   }
-
-  // Future<void> _toggleFollow() async {
-  //   final databaseProvider = Provider.of<DatabaseProvider>(context, listen: false);
-  //   if (_isFollowing) {
-  //     showDialog(
-  //       context: context,
-  //       builder: (context) => AlertDialog(
-  //         title: const Text("Unfollow"),
-  //         content: const Text("Are you sure you want to unfollow?"),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () => Navigator.pop(context),
-  //             child: const Text("Cancel"),
-  //           ),
-  //           TextButton(
-  //             onPressed: () async {
-  //               Navigator.pop(context);
-  //               // Perform unfollow
-  //               await databaseProvider.unfollowUser(widget.uid);
-  //               setState(() {
-  //                 _isFollowing = false;
-  //               });
-  //             },
-  //             child: const Text("Yes"),
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   } else {
-  //     await databaseProvider.followUser(widget.uid);
-  //     setState(() {
-  //       _isFollowing = true;
-  //     });
-  //   }
-  // }
 
   Future<void> fetchUserData() async {
     try {
