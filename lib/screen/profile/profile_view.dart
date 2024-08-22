@@ -3,7 +3,6 @@ import 'package:diet_app/common/RoundButton.dart';
 import 'package:diet_app/common/color_extension.dart';
 import 'package:diet_app/common/common_widget/title_subtitle_cell.dart';
 import 'package:diet_app/database/auth_service.dart';
-import 'package:diet_app/screen/Theme/Apparance.dart';
 import 'package:diet_app/screen/profile/edit_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +32,7 @@ class _ProfileViewState extends State<ProfileView> {
   TextEditingController _goalController = TextEditingController();
   String profilePicture = '';
   String selectedDietId = '';
+  String totalSteps = '';
 
   List<Map<String, dynamic>> historyList = []; // State variable to store history data
 
@@ -42,6 +42,22 @@ class _ProfileViewState extends State<ProfileView> {
     fetchUserData();
     fetchUserHistory();
   }
+
+  // Future<int> _fetchDailySteps() async {
+  //   String uid = _auth.currentUser!.uid;
+  //   DocumentSnapshot snapshot = await FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(uid)
+  //       .collection('steps')
+  //       .doc('dailySteps')
+  //       .get();
+  //
+  //   if (snapshot.exists && snapshot.data() != null) {
+  //     Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+  //     return data['totalSteps'] ?? 0;
+  //   }
+  //   return 0;
+  // }
 
   Future<void> fetchUserData() async {
     try {
@@ -66,6 +82,7 @@ class _ProfileViewState extends State<ProfileView> {
           txtHeight.text = userDoc['height'].toString();
           txtWeight.text = userDoc['weight'].toString();
           selectedDietId = userDoc['selectedDietName'];
+          totalSteps = userDoc['totalSteps'].toString();
         });
         print("This is the current user email: ${userDoc['email']}");
         print("This is the current user name: ${userDoc['fname']}");
@@ -262,11 +279,19 @@ class _ProfileViewState extends State<ProfileView> {
                   ),
                 ],
               ),
+
               const SizedBox(height: 15),
               TitleSubtitleCell(
                 title: selectedDietId,
                 subtitle: "Selected Diet",
               ),
+
+              const SizedBox(height: 15),
+              TitleSubtitleCell(
+                title: totalSteps,
+                subtitle: "Total Steps",
+              ),
+
               // User history information
               const SizedBox(height: 20),
               Text(
@@ -303,7 +328,7 @@ class _ProfileViewState extends State<ProfileView> {
                           color: TColor.primaryColor2,
                           blurRadius: 10,
                           spreadRadius: 2,
-                          offset: Offset(0, 3),
+                          offset: const Offset(0, 3),
                         ),
                       ],
                     ),
